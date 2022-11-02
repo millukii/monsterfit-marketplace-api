@@ -1,0 +1,13 @@
+---
+gin:
+  - name: greeter # Required
+    port: 8080 # Required
+    enabled: true # Required
+    commonService:
+      enabled: true # Optional, default: false
+    interceptors:
+      cors:
+        enabled: true # Optional, default: false
+        # Accept all origins from localhost
+        allowOrigins:
+          - "http://localhost:*" # Optional, default: *

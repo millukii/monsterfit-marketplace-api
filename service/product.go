@@ -3,17 +3,17 @@ package service
 import (
 	"fmt"
 
-	"github.com/gin-gonic/gin"
-
 	"api/models"
 	"api/repository"
+
+	"github.com/labstack/echo"
 )
 type ProductService interface {
-	Create(product *models.Product, c *gin.Context) (*models.Product, error)
-	Update(id string,product *models.Product, c *gin.Context) (*models.Product, error)
-	FindById(id string, c *gin.Context) (*models.Product, error)
-	Find(page int64, limit int64, c *gin.Context) ([]*models.Product, error)
-	Delete(id string, c *gin.Context) error
+	Create(product *models.Product, c echo.Context) (*models.Product, error)
+	Update(id string,product *models.Product, c echo.Context) (*models.Product, error)
+	FindById(id string, c echo.Context) (*models.Product, error)
+	Find(page int64, limit int64, c echo.Context) ([]*models.Product, error)
+	Delete(id string, c echo.Context) error
 }
 
 type ProductServiceImpl struct {
@@ -23,7 +23,7 @@ type ProductServiceImpl struct {
 func NewProductService(productRepo repository.ProductRepo) ProductService {
 	return &ProductServiceImpl{productRepo}
 }
-func (p ProductServiceImpl ) 	Create(product *models.Product, ctx *gin.Context) (*models.Product, error){
+func (p ProductServiceImpl ) 	Create(product *models.Product, ctx echo.Context) (*models.Product, error){
 
 	dbProduct, err := p.productRepo.Create(product, ctx)
 	if err != nil {
@@ -42,7 +42,7 @@ func (p ProductServiceImpl ) 	Create(product *models.Product, ctx *gin.Context) 
 		Cost: fmt.Sprint(dbProduct.Cost),
 	}, nil
 }
-	func (p ProductServiceImpl ) 	Update(id string, product *models.Product, ctx *gin.Context) (*models.Product, error){
+	func (p ProductServiceImpl ) 	Update(id string, product *models.Product, ctx echo.Context) (*models.Product, error){
 		
 	dbProduct, err := p.productRepo.Update(id,product, ctx)
 	if err != nil {
@@ -61,7 +61,7 @@ func (p ProductServiceImpl ) 	Create(product *models.Product, ctx *gin.Context) 
 		Cost: fmt.Sprint(dbProduct.Cost),
 	}, nil
 	}
-func (p ProductServiceImpl ) 		FindById(id string, ctx *gin.Context) (*models.Product, error){
+func (p ProductServiceImpl ) 		FindById(id string, ctx echo.Context) (*models.Product, error){
 	dbProduct, err := p.productRepo.FindById(id, ctx)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (p ProductServiceImpl ) 		FindById(id string, ctx *gin.Context) (*models.Pr
 		Cost: fmt.Sprint(dbProduct.Cost),
 	}, nil
 }
-func (p ProductServiceImpl ) 		Find(page int64, limit int64, ctx *gin.Context) ([]*models.Product, error){
+func (p ProductServiceImpl ) 		Find(page int64, limit int64, ctx echo.Context) ([]*models.Product, error){
 	dbProducts, err := p.productRepo.Find(page,limit, ctx)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (p ProductServiceImpl ) 		Find(page int64, limit int64, ctx *gin.Context) (
  }
 	return products , nil
 }
-func (p ProductServiceImpl ) 		Delete(id string, ctx *gin.Context) error{
+func (p ProductServiceImpl ) 		Delete(id string, ctx echo.Context) error{
 		return nil
 }
 

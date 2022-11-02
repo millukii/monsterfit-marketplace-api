@@ -1,25 +1,25 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 
 	"api/entities"
 	"api/models"
-
 )
 
 type ProductRepo interface {
-	Create(product *models.Product, c *gin.Context) (*entities.MProduct, error)
-	Update(id string, product *models.Product, c *gin.Context) (*entities.MProduct, error)
-	FindById(id string, c *gin.Context) (*entities.MProduct, error)
-	Find(page int64, limit int64, c *gin.Context) ([]*entities.MProduct, error)
-	Delete(id string, c *gin.Context) error
+	Create(product *models.Product, c echo.Context) (*entities.MProduct, error)
+	Update(id string, product *models.Product, c echo.Context) (*entities.MProduct, error)
+	FindById(id string, c echo.Context) (*entities.MProduct, error)
+	Find(page int64, limit int64, c echo.Context) ([]*entities.MProduct, error)
+	Delete(id string, c echo.Context) error
 }
 
 type ProductRepoImpl struct {
@@ -29,8 +29,9 @@ type ProductRepoImpl struct {
 func NewProductRepo(collection *mongo.Collection) ProductRepo {
 	return &ProductRepoImpl{collection}
 }
-func (p ProductRepoImpl ) 	Create(product *models.Product, ctx *gin.Context) (*entities.MProduct, error){
-result, err := p.collection.InsertOne(ctx, product)
+func (p ProductRepoImpl ) 	Create(product *models.Product, ctx echo.Context) (*entities.MProduct, error){
+	c := context.Background()
+result, err := p.collection.InsertOne(c, product)
 // check for errors in the insertion
 	if err != nil {
 					log.Print(err)
@@ -44,11 +45,11 @@ result, err := p.collection.InsertOne(ctx, product)
 	}
 	return createdProduct, nil
 }
-	func (p ProductRepoImpl ) 	Update(id string, product *models.Product, ctx *gin.Context) (*entities.MProduct, error){
+	func (p ProductRepoImpl ) 	Update(id string, product *models.Product, ctx echo.Context) (*entities.MProduct, error){
 		
 filter := bson.D{{Name: "internalCode", Value: id}}
-
-updateResult, err := p.collection.UpdateOne(ctx, filter, bson.D{
+	c := context.Background()
+updateResult, err := p.collection.UpdateOne(c, filter, bson.D{
 	{Name: "$set", Value: product},
 })
 		if err != nil {
@@ -65,13 +66,14 @@ fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.Matc
 	}
 	return updatedProduct, nil
 	}
-func (p ProductRepoImpl ) 		FindById(id string, ctx *gin.Context) (*entities.MProduct, error){
+func (p ProductRepoImpl ) 		FindById(id string, ctx echo.Context) (*entities.MProduct, error){
 	var result entities.MProduct
 //filter := bson.M{"internalCode": id}
 //filter := bson.D{{"quantity", bson.D{{"$eq", "mf-0000001"}}}}
 /* project := bson.D{{ "internalCode", 1 }}
 opts := options.FindOne().SetProjection(project) */
-res := p.collection.FindOne(ctx, bson.M{"internalCode": id})
+	c := context.Background()
+res := p.collection.FindOne(c, bson.M{"internalCode": id})
 if res.Err() != nil{
 		log.Println("FindOne repository result error ", res.Err())
 		return nil, res.Err()
@@ -84,39 +86,39 @@ if err != nil {
 fmt.Printf("product found: %v\n", result)
 		return &result, nil
 }
-func (p ProductRepoImpl ) 		Find(page int64, limit int64, ctx *gin.Context) ([]*entities.MProduct, error){
+func (p ProductRepoImpl ) 		Find(page int64, limit int64, ctx echo.Context) ([]*entities.MProduct, error){
 	   result := make([]*entities.MProduct, 0)
 
-
-   curr, err := p.collection.Find(ctx, bson.M{})
+	c := context.Background()
+   curr, err := p.collection.Find(c, bson.M{})
 
    if err != nil {
       return nil, err
    }
-	 err = curr.All(ctx, &result) 
+	 err = curr.All(c, &result) 
    if err != nil {
       return nil, err
    }
    return result, nil
 }
-func (p ProductRepoImpl ) 		Delete(id string, ctx *gin.Context) error{
+func (p ProductRepoImpl ) 		Delete(id string, ctx echo.Context) error{
 		return nil
 }
 
 
 
-type mongoPaginate struct {
+type mongoPaechoate struct {
    limit int64
    page int64
 }
-func newMongoPaginate(limit, page int64) *mongoPaginate {
-   return &mongoPaginate{
+func newMongoPaechoate(limit, page int64) *mongoPaechoate {
+   return &mongoPaechoate{
       limit: int64(limit),
       page:  int64(page),
    }
 }
 
-func (mp *mongoPaginate) getPaginatedOpts() *options.FindOptions {
+func (mp *mongoPaechoate) getPaechoatedOpts() *options.FindOptions {
    l := mp.limit
    skip := mp.page*mp.limit - mp.limit
    fOpt := options.FindOptions{Limit: &l, Skip: &skip}

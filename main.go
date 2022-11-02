@@ -9,6 +9,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 
 	"api/db"
 	"api/handler"
@@ -25,7 +27,6 @@ func init() {
 }
 
 func main() {
-	 router := gin.Default()
 
 	 var ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
  	defer cancel()
@@ -40,42 +41,27 @@ func main() {
 	 productRepo := repository.NewProductRepo(productCollection)
 	 productService := service.NewProductService(productRepo)
 	 productHandler := handler.NewProductHandler(productService)
+
+
+
+	 	e := echo.New()
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: []string{"http://localhost:3000", "*"},
+			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		}))
+
+		
+
     // Its great to version your API's
-    v1 := router.Group("/api/v1")
+    v1 := e.Group("/api/v1")
     {
         v1.GET("/products/", productHandler.Find)
 				v1.GET("/products/:id/", productHandler.FindById)
 				v1.POST("/products/", productHandler.Create)
 				v1.PATCH("/products/:id/", productHandler.Update)
 				v1.DELETE("/products/:id/", productHandler.Delete)
-				v1.OPTIONS("/products/", OptionMessage)
-				v1.OPTIONS("/products/:id/", OptionMessage)
     }
-
-    // Handle error response when a route is not defined
-    router.NoRoute(func(c *gin.Context) {
-        // In gin this is how you return a JSON response
-        c.JSON(404, gin.H{"message": "Not found"})
-    })
-	// Global middleware
-	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
-	// By default gin.DefaultWriter = os.Stdout
-		router.Use(gin.Logger())
-
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-		router.Use(gin.Recovery())
-
-		  config := cors.DefaultConfig()
-    config.AllowAllOrigins = true
-    router.Use(cors.New(config))
-
-		//router.Use(CORS)
-	//	router.Use(cors.New(CORSConfig()))
-
-
-
-    // Init our server
-    router.Run(":5000")
+		e.Logger.Fatal(e.Start(":5000"))
 }
 func CORS(c *gin.Context) {
 
